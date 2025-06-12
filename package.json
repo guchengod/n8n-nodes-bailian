@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-bailian",
-  "version": "0.2.0",
+  "version": "0.5.0",
   "description": "阿里云DashScope API集成的n8n节点",
   "keywords": [
     "n8n-community-node-package"
@@ -8,12 +8,12 @@
   "license": "MIT",
   "homepage": "https://help.aliyun.com/document_detail/2400305.html",
   "author": {
-    "name": "Bailian",
-    "email": "example@example.com"
+    "name": "guchengod",
+    "email": "guchengod@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/guchengod/n8n-nodes-bailian.git"
+    "url": "git+https://github.com/guchengod/n8n-nodes-bailian.git"
   },
   "engines": {
     "node": ">=20.15"

@@ -31,8 +31,8 @@ interface IDashScopeTaskOutput {
 		SUCCEEDED: number;
 		FAILED: number;
 	};
-	code?: string; 
-	message?: string; 
+	code?: string;
+	message?: string;
 }
 
 interface IDashScopeTaskResponse {
@@ -45,9 +45,9 @@ interface IDashScopeTaskResponse {
 
 export class DashScopeGetTaskResult implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: '阿里云 DashScope 获取任务结果',
+		displayName: 'DashScopeGetTaskResult',
 		name: 'dashScopeGetTaskResult',
-		icon: 'file:dashscope.svg', // 我们可以复用之前的图标，或者创建一个新的
+		icon: 'file:dashscope.svg',
 		group: ['transform'],
 		version: 1,
 		description: '查询阿里云 DashScope 异步任务的执行结果',

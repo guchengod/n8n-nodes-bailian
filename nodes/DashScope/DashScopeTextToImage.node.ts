@@ -10,7 +10,7 @@ import axios from 'axios';
 
 export class DashScopeTextToImage implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: '阿里云 DashScope 文本生图',
+		displayName: 'DashScopeTextToImage',
 		name: 'dashScopeTextToImage',
 		icon: 'file:dashscope.svg',
 		group: ['transform'],
@@ -228,25 +228,25 @@ export class DashScopeTextToImage implements INodeType {
 					// 异步模式，需要轮询结果
 					const taskId = response.data.output.task_id;
 					const taskResultUrl = `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`;
-					
+
 					let taskResult: any;
 					let attempts = 0;
 					let taskStatus = 'PENDING';
-					
+
 					// 轮询异步任务结果
 					while (['PENDING', 'RUNNING'].includes(taskStatus) && attempts < maxPollingAttempts) {
 						// 等待指定的轮询间隔
 						await new Promise<void>(resolve => {
 							setTimeout(() => resolve(), pollingInterval);
 						});
-						
+
 						attempts++;
-						
+
 						try {
 							const pollingResponse = await axios.get(taskResultUrl, { headers: { 'Authorization': `Bearer ${apiKey}` } });
 							taskResult = pollingResponse.data as Record<string, any>;
 							taskStatus = taskResult.output?.task_status || taskResult.task_status;
-							
+
 							// 任务完成或失败时跳出循环
 							if (taskStatus === 'SUCCEEDED' || taskStatus === 'FAILED') {
 								break;
@@ -259,7 +259,7 @@ export class DashScopeTextToImage implements INodeType {
 							);
 						}
 					}
-					
+
 					if (taskStatus === 'SUCCEEDED') {
 						// 任务成功，返回生成的图像
 						returnData.push({
