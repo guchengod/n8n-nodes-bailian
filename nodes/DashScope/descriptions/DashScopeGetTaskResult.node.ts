@@ -45,14 +45,15 @@ interface IDashScopeTaskResponse {
 
 export class DashScopeGetTaskResult implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'DashScopeGetTaskResult',
+		displayName: '阿里云百炼: 查询生图结果',
 		name: 'dashScopeGetTaskResult',
 		icon: 'file:dashscope.svg',
-		group: ['transform'],
+		group: ['ai'],
+		subtitle: '查询图片任务',
 		version: 1,
-		description: '查询阿里云 DashScope 异步任务的执行结果',
+		description: '查询阿里云百炼文生图异步任务的执行结果',
 		defaults: {
-			name: '获取任务结果',
+			name: '查询异步文生图结果',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],

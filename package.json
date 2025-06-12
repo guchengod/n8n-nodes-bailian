@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-bailian",
-  "version": "0.5.0",
+  "version": "0.14.0",
   "description": "阿里云DashScope API集成的n8n节点",
   "keywords": [
     "n8n-community-node-package"
@@ -33,15 +33,13 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/ExampleCredentialsApi.credentials.js",
-      "dist/credentials/HttpBinApi.credentials.js",
       "dist/credentials/DashScopeApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/ExampleNode/ExampleNode.node.js",
-      "dist/nodes/HttpBin/HttpBin.node.js",
       "dist/nodes/DashScope/DashScopeTextToImage.node.js",
-      "dist/nodes/DashScope/DashScopeGetTaskResult.node.js"
+      "dist/nodes/DashScope/DashScopeGetTaskResult.node.js",
+      "dist/nodes/DashScope/DashScopeTextToVideo.node.js",
+      "dist/nodes/DashScope/DashScopeGetVideoTaskResult.node.js"
     ]
   },
   "devDependencies": {

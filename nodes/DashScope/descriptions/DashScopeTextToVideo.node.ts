@@ -10,12 +10,13 @@ import axios from 'axios';
 
 export class DashScopeTextToVideo implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'DashScopeTextToVideo',
+		displayName: '阿里云百炼: 文本生视频',
 		name: 'dashScopeTextToVideo',
 		icon: 'file:dashscope.svg',
-		group: ['transform'],
+		group: ['ai'],
+		subtitle: '视频生成',
 		version: 1,
-		description: '使用阿里云 DashScope 的文本到视频合成 API',
+		description: '使用阿里云百炼文本到视频合成 API',
 		defaults: {
 			name: '文本生视频',
 		},

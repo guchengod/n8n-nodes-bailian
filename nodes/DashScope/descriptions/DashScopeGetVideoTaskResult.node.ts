@@ -33,14 +33,15 @@ interface IDashScopeVideoTaskResponse {
 
 export class DashScopeGetVideoTaskResult implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'DashScopeGetVideoTaskResult',
+		displayName: '阿里云百炼: 查询生视频结果',
 		name: 'dashScopeGetVideoTaskResult',
 		icon: 'file:dashscope.svg',
-		group: ['transform'],
+		group: ['ai'],
+		subtitle: '查询视频任务',
 		version: 1,
-		description: '查询阿里云 DashScope 文生视频异步任务的执行结果',
+		description: '查询阿里云百炼文生视频异步任务的执行结果',
 		defaults: {
-			name: '获取视频任务结果',
+			name: '查询生视频结果',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],

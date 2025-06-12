@@ -10,12 +10,13 @@ import axios from 'axios';
 
 export class DashScopeTextToImage implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'DashScopeTextToImage',
+		displayName: '阿里云百炼: 文本生图',
 		name: 'dashScopeTextToImage',
 		icon: 'file:dashscope.svg',
-		group: ['transform'],
+		group: ['ai'],
+		subtitle: '图片生成',
 		version: 1,
-		description: '使用阿里云 DashScope 的文本到图像合成 API',
+		description: '使用阿里云百炼文本到图像合成 API',
 		defaults: {
 			name: '文本生图',
 		},
