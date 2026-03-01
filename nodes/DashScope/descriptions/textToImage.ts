@@ -13,19 +13,19 @@ export const TextToImageOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: '文生图',
+				name: '文生图 (异步)',
 				value: 'create',
 				description: '使用文本描述生成图像',
 				action: '文生图',
 			},
 			{
-				name: '图像编辑/处理',
+				name: '图像编辑/处理 (异步)',
 				value: 'edit',
 				description: '对现有图像进行编辑、重绘、扩展或补全',
 				action: '图像编辑',
 			},
 			{
-				name: '行业专用生成',
+				name: '行业专用生成 (异步)',
 				value: 'special',
 				description: '虚拟模特、试衣、写真、海报、WordArt等',
 				action: '行业专用生成',

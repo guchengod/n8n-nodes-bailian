@@ -13,101 +13,189 @@ export const TextToVideoOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: '创建视频',
-				value: 'create',
+				name: '文生视频 (异步)',
+				value: 'textToVideo',
 				description: '使用文本描述生成视频',
-				action: '创建视频',
+				action: '文生视频',
+			},
+			{
+				name: '图生视频 (异步)',
+				value: 'imageToVideo',
+				description: '基于单张或多张图片生成视频',
+				action: '图生视频',
+			},
+			{
+				name: '人像动画/数字人 (异步)',
+				value: 'portraitAnimation',
+				description: '舞动人像、悦动人像、灵动人像及数字人播报',
+				action: '人像动画',
+			},
+			{
+				name: '视频编辑/重绘 (异步)',
+				value: 'videoEdit',
+				description: '视频换人、风格重绘及通用编辑',
+				action: '视频编辑',
 			},
 		],
-		default: 'create',
+		default: 'textToVideo',
 	},
 ];
 
 export const TextToVideoFields: INodeProperties[] = [
-	// 创建视频操作的参数
+	// --- 模型选择 ---
 	{
 		displayName: '模型',
 		name: 'model',
 		type: 'options',
-		options: [
-			{
-				name: 'Wanx Text-to-Video',
-				value: 'wanx-v2-t2v',
-			},
-			{
-				name: 'Wanx Image-to-Video',
-				value: 'wanx-v2-i2v',
-			},
-			{
-				name: 'Text To Video (Legacy)',
-				value: 'text-to-video',
-			},
-		],
-		default: 'text-to-video',
-		description: '要使用的模型',
 		displayOptions: {
 			show: {
 				resource: ['textToVideo'],
-				operation: ['create'],
+				operation: ['textToVideo'],
 			},
 		},
-		required: true,
+		options: [
+			{ name: '万相-文生视频', value: 'wanx-v2-t2v' },
+		],
+		default: 'wanx-v2-t2v',
 	},
 	{
-		displayName: '提示词',
+		displayName: '模型',
+		name: 'model',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['textToVideo'],
+				operation: ['imageToVideo'],
+			},
+		},
+		options: [
+			{ name: '万相-图生视频-基于首帧', value: 'wanx-v2-i2v' },
+			{ name: '万相-图生视频-基于首尾帧', value: 'wanx-v2-i2v-dual' },
+			{ name: '万相-参考生视频', value: 'wanx-v2-reference' },
+			{ name: '万相-图生动作', value: 'wanx-image-to-action-v1' },
+			{ name: '图生表情包视频-Emoji', value: 'wanx-emoji-v1' },
+		],
+		default: 'wanx-v2-i2v',
+	},
+	{
+		displayName: '模型',
+		name: 'model',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['textToVideo'],
+				operation: ['portraitAnimation'],
+			},
+		},
+		options: [
+			{ name: '舞动人像-AnimateAnyone', value: 'animate-anyone-v1' },
+			{ name: '悦动人像-EMO', value: 'emo-v1' },
+			{ name: '灵动人像-LivePortrait', value: 'live-portrait-v1' },
+			{ name: '万相-数字人', value: 'wanx-digital-human-v1' },
+		],
+		default: 'animate-anyone-v1',
+	},
+	{
+		displayName: '模型',
+		name: 'model',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['textToVideo'],
+				operation: ['videoEdit'],
+			},
+		},
+		options: [
+			{ name: '万相-通用视频编辑', value: 'wanx-video-edit-v1' },
+			{ name: '万相-视频换人', value: 'wanx-video-face-replace-v1' },
+			{ name: '视频口型替换-VideoRetalk', value: 'video-retalk-v1' },
+			{ name: '视频风格重绘', value: 'wanx-video-style-repaint-v1' },
+		],
+		default: 'wanx-video-edit-v1',
+	},
+
+	// --- 基础参数 ---
+	{
+		displayName: '提示词 (Prompt)',
 		name: 'prompt',
 		type: 'string',
 		default: '',
 		placeholder: '例如：一只可爱的小猫在跑步',
-		description: '用于生成视频的文本描述',
 		displayOptions: {
 			show: {
 				resource: ['textToVideo'],
-				operation: ['create'],
+			},
+			hide: {
+				model: ['wanx-emoji-v1', 'wanx-digital-human-v1', 'video-retalk-v1'],
 			},
 		},
-		required: true,
 	},
 	{
-		displayName: '图片 URL',
+		displayName: '首帧图片 URL',
 		name: 'imageUrl',
 		type: 'string',
 		default: '',
-		placeholder: '例如：https://example.com/image.jpg',
-		description: '用于生成视频的参考图片 URL',
+		placeholder: 'https://example.com/start.jpg',
 		displayOptions: {
 			show: {
 				resource: ['textToVideo'],
-				operation: ['create'],
-				model: ['wanx-v2-i2v'],
+				operation: ['imageToVideo', 'portraitAnimation'],
 			},
 		},
 		required: true,
 	},
 	{
-		displayName: '负面提示词',
-		name: 'negativePrompt',
+		displayName: '尾帧图片 URL',
+		name: 'lastFrameUrl',
 		type: 'string',
 		default: '',
-		placeholder: '例如：模糊、低质量',
-		description: '指定不希望在视频中出现的内容',
+		placeholder: 'https://example.com/end.jpg',
 		displayOptions: {
 			show: {
 				resource: ['textToVideo'],
-				operation: ['create'],
+				model: ['wanx-v2-i2v-dual'],
 			},
 		},
+		required: true,
 	},
+	{
+		displayName: '视频 URL',
+		name: 'videoUrl',
+		type: 'string',
+		default: '',
+		placeholder: 'https://example.com/input.mp4',
+		displayOptions: {
+			show: {
+				resource: ['textToVideo'],
+				operation: ['videoEdit'],
+			},
+		},
+		required: true,
+	},
+	{
+		displayName: '音频 URL',
+		name: 'audioUrl',
+		type: 'string',
+		default: '',
+		placeholder: 'https://example.com/audio.mp3',
+		displayOptions: {
+			show: {
+				resource: ['textToVideo'],
+				model: ['emo-v1', 'video-retalk-v1', 'wanx-digital-human-v1'],
+			},
+		},
+		required: true,
+	},
+
+	// --- 轮询设置 ---
 	{
 		displayName: '是否持续轮询任务结果',
 		name: 'waitingForTask',
 		type: 'boolean',
 		default: true,
-		description: '是否等待并轮询直到任务完成',
 		displayOptions: {
 			show: {
 				resource: ['textToVideo'],
-				operation: ['create'],
 			},
 		},
 	},
@@ -118,12 +206,10 @@ export const TextToVideoFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['textToVideo'],
-				operation: ['create'],
 				waitingForTask: [true],
 			},
 		},
-		default: 2000,
-		description: '检查任务状态的时间间隔',
+		default: 5000,
 	},
 	{
 		displayName: '最长等待时间 (秒)',
@@ -132,12 +218,10 @@ export const TextToVideoFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['textToVideo'],
-				operation: ['create'],
 				waitingForTask: [true],
 			},
 		},
-		default: 300,
-		description: '等待任务完成的最长时间',
+		default: 600,
 	},
 	{
 		displayName: '高级选项',
@@ -148,37 +232,30 @@ export const TextToVideoFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['textToVideo'],
-				operation: ['create'],
 			},
 		},
 		options: [
 			{
-				displayName: '视频时长',
-				name: 'duration',
-				type: 'number',
-				default: 3,
-				description: '视频的持续时间，单位为秒',
-			},
-			{
-				displayName: '图片宽度',
-				name: 'width',
-				type: 'number',
-				default: 1024,
-				description: '视频宽度',
-			},
-			{
-				displayName: '图片高度',
-				name: 'height',
-				type: 'number',
-				default: 576,
-				description: '视频高度',
+				displayName: '负面提示词',
+				name: 'negative_prompt',
+				type: 'string',
+				default: '',
 			},
 			{
 				displayName: '种子值',
 				name: 'seed',
 				type: 'number',
 				default: 0,
-				description: '指定随机种子值以获得可重复的结果，0表示随机',
+			},
+			{
+				displayName: '分辨率',
+				name: 'size',
+				type: 'options',
+				options: [
+					{ name: '1280*720', value: '1280*720' },
+					{ name: '720*1280', value: '720*1280' },
+				],
+				default: '1280*720',
 			},
 		],
 	},
