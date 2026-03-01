@@ -36,10 +36,7 @@
       "dist/credentials/DashScopeApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/DashScope/DashScopeTextToImage.node.js",
-      "dist/nodes/DashScope/DashScopeGetTaskResult.node.js",
-      "dist/nodes/DashScope/DashScopeTextToVideo.node.js",
-      "dist/nodes/DashScope/DashScopeGetVideoTaskResult.node.js"
+      "dist/nodes/DashScope/DashScope.node.js"
     ]
   },
   "devDependencies": {

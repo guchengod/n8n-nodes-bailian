@@ -31,7 +31,15 @@ export const TextToVideoFields: INodeProperties[] = [
 		type: 'options',
 		options: [
 			{
-				name: 'Text To Video',
+				name: 'Wanx Text-to-Video',
+				value: 'wanx-v2-t2v',
+			},
+			{
+				name: 'Wanx Image-to-Video',
+				value: 'wanx-v2-i2v',
+			},
+			{
+				name: 'Text To Video (Legacy)',
 				value: 'text-to-video',
 			},
 		],
@@ -56,6 +64,22 @@ export const TextToVideoFields: INodeProperties[] = [
 			show: {
 				resource: ['textToVideo'],
 				operation: ['create'],
+			},
+		},
+		required: true,
+	},
+	{
+		displayName: '图片 URL',
+		name: 'imageUrl',
+		type: 'string',
+		default: '',
+		placeholder: '例如：https://example.com/image.jpg',
+		description: '用于生成视频的参考图片 URL',
+		displayOptions: {
+			show: {
+				resource: ['textToVideo'],
+				operation: ['create'],
+				model: ['wanx-v2-i2v'],
 			},
 		},
 		required: true,

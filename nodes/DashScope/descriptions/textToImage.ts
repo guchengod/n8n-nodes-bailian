@@ -31,8 +31,12 @@ export const TextToImageFields: INodeProperties[] = [
 		type: 'options',
 		options: [
 			{
-				name: 'Wanx Image',
+				name: 'Wanx Image V1',
 				value: 'wanx-v1',
+			},
+			{
+				name: 'Wanx Image V2',
+				value: 'wanx-v2',
 			},
 			{
 				name: 'Stable Diffusion XL',

@@ -14,6 +14,12 @@ import {
 	TextToImageOperations,
 	TextToVideoFields, 
 	TextToVideoOperations,
+	SpeechSynthesisFields,
+	SpeechSynthesisOperations,
+	SpeechRecognitionFields,
+	SpeechRecognitionOperations,
+	SpeechTranslationFields,
+	SpeechTranslationOperations,
 	TaskResultFields, 
 	TaskResultOperations
 } from './descriptions';
@@ -56,6 +62,18 @@ export class DashScope implements INodeType {
 						value: 'textToVideo',
 					},
 					{
+						name: '语音合成',
+						value: 'speechSynthesis',
+					},
+					{
+						name: '语音识别',
+						value: 'speechRecognition',
+					},
+					{
+						name: '语音翻译',
+						value: 'speechTranslation',
+					},
+					{
 						name: '任务结果',
 						value: 'taskResult',
 					},
@@ -67,6 +85,12 @@ export class DashScope implements INodeType {
 			...TextToImageFields,
 			...TextToVideoOperations,
 			...TextToVideoFields,
+			...SpeechSynthesisOperations,
+			...SpeechSynthesisFields,
+			...SpeechRecognitionOperations,
+			...SpeechRecognitionFields,
+			...SpeechTranslationOperations,
+			...SpeechTranslationFields,
 			...TaskResultOperations,
 			...TaskResultFields,
 		]
@@ -190,6 +214,12 @@ export class DashScope implements INodeType {
 							parameters: {}
 						};
 
+						// 如果是图生视频，添加图片URL
+						if (model === 'wanx-v2-i2v') {
+							const imageUrl = this.getNodeParameter('imageUrl', i) as string;
+							(requestBody.input as IDataObject).image_url = imageUrl;
+						}
+
 						// 添加负面提示词
 						if (negativePrompt) {
 							(requestBody.input as IDataObject).negative_prompt = negativePrompt;
@@ -242,9 +272,172 @@ export class DashScope implements INodeType {
 						});
 					}
 				}
+			} else if (resource === 'speechSynthesis') {
+				// 语音合成
+				if (operation === 'textToSpeech') {
+					for (let i = 0; i < items.length; i++) {
+						const model = this.getNodeParameter('model', i) as string;
+						const input = this.getNodeParameter('input', i) as string;
+						const voice = this.getNodeParameter('voice', i, 'anna') as string;
+						
+						const requestBody: IDataObject = {
+							model,
+							input: {
+								text: input,
+							},
+							parameters: {
+								voice,
+							}
+						};
+
+						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
+						if (Object.keys(additionalOptions).length > 0 && requestBody.parameters) {
+							Object.assign(requestBody.parameters as IDataObject, additionalOptions);
+						}
+
+						const response = await axios({
+							method: 'POST',
+							url: 'https://dashscope.aliyuncs.com/api/v1/services/audio/tts/text-to-speech',
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': `Bearer ${apiKey}`,
+								// 如果需要流式或者特定格式，可能需要设置 X-DashScope-SSE
+							},
+							data: requestBody,
+							responseType: 'arraybuffer',
+						});
+
+						// 检查是否是 JSON (错误信息) 还是音频流
+						const contentType = response.headers['content-type'];
+						if (contentType && contentType.includes('application/json')) {
+							const result = JSON.parse(Buffer.from(response.data as any).toString());
+							returnData.push({ json: result });
+						} else {
+							// 处理二进制音频数据
+							const binaryData = await this.helpers.prepareBinaryData(
+								Buffer.from(response.data as any),
+								`tts-${Date.now()}.${(requestBody.parameters as IDataObject).format || 'mp3'}`,
+								contentType
+							);
+							returnData.push({
+								json: {
+									success: true,
+								},
+								binary: {
+									data: binaryData,
+								},
+							});
+						}
+					}
+				}
+			} else if (resource === 'speechRecognition') {
+				// 语音识别 (文件转写)
+				if (operation === 'transcription') {
+					for (let i = 0; i < items.length; i++) {
+						const model = this.getNodeParameter('model', i) as string;
+						const fileUrl = this.getNodeParameter('fileUrl', i) as string;
+						const waitingForTask = this.getNodeParameter('waitingForTask', i, true) as boolean;
+						
+						const requestBody: IDataObject = {
+							model,
+							input: {
+								file_urls: [fileUrl],
+							},
+							parameters: {}
+						};
+
+						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
+						if (Object.keys(additionalOptions).length > 0 && requestBody.parameters) {
+							Object.assign(requestBody.parameters as IDataObject, additionalOptions);
+						}
+
+						const response = await axios({
+							method: 'POST',
+							url: 'https://dashscope.aliyuncs.com/api/v1/services/audio/asr/transcription',
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': `Bearer ${apiKey}`,
+								'X-DashScope-Async': 'enable',
+							},
+							data: requestBody,
+						});
+
+						let result = response.data as IDataObject;
+
+						if (waitingForTask && result.output) {
+							const outputData = result.output as IDataObject;
+							if (outputData && typeof outputData.task_id === 'string') {
+								const interval = this.getNodeParameter('interval', i, 2000) as number;
+								const maxWaitTime = this.getNodeParameter('maxWaitTime', i, 600) as number;
+								const taskId = outputData.task_id;
+								
+								try {
+									result = await pollTaskStatus(
+										taskId,
+										'https://dashscope.aliyuncs.com/api/v1/tasks',
+										apiKey,
+										interval,
+										maxWaitTime
+									) as IDataObject;
+								} catch (error) {
+									throw new NodeOperationError(this.getNode(), `轮询任务结果失败: ${error.message}`);
+								}
+							}
+						}
+
+						returnData.push({
+							json: result,
+						});
+					}
+				}
+			} else if (resource === 'speechTranslation') {
+				// 语音翻译
+				if (operation === 'translate') {
+					for (let i = 0; i < items.length; i++) {
+						const model = this.getNodeParameter('model', i) as string;
+						const fileUrl = this.getNodeParameter('fileUrl', i) as string;
+						const sourceLanguage = this.getNodeParameter('sourceLanguage', i, 'zh') as string;
+						const targetLanguage = this.getNodeParameter('targetLanguage', i, 'en') as string;
+						
+						// 使用 Qwen-Audio 或类似接口
+						const requestBody: IDataObject = {
+							model,
+							input: {
+								messages: [
+									{
+										role: 'user',
+										content: [
+											{ audio: fileUrl },
+											{ text: `请将这段语音从${sourceLanguage}翻译为${targetLanguage}` }
+										]
+									}
+								]
+							}
+						};
+
+						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
+						if (Object.keys(additionalOptions).length > 0) {
+							Object.assign(requestBody, additionalOptions);
+						}
+
+						const response = await axios({
+							method: 'POST',
+							url: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': `Bearer ${apiKey}`
+							},
+							data: requestBody,
+						});
+
+						returnData.push({
+							json: response.data,
+						});
+					}
+				}
 			} else if (resource === 'taskResult') {
 				// 查询任务结果
-				if (operation === 'queryImageTask' || operation === 'queryVideoTask') {
+				if (operation === 'queryImageTask' || operation === 'queryVideoTask' || operation === 'querySpeechTask') {
 					for (let i = 0; i < items.length; i++) {
 						// 获取参数
 						const taskId = this.getNodeParameter('taskId', i) as string;

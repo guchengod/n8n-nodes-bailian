@@ -24,6 +24,12 @@ export const TaskResultOperations: INodeProperties[] = [
 				description: '查询视频生成任务的结果',
 				action: '查询视频任务',
 			},
+			{
+				name: '查询语音任务',
+				value: 'querySpeechTask',
+				description: '查询语音识别任务的结果',
+				action: '查询语音任务',
+			},
 		],
 		default: 'queryImageTask',
 	},
