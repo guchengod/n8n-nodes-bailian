@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-bailian",
-  "version": "0.15.0",
+  "version": "0.17.3",
   "description": "阿里云DashScope API集成的n8n节点",
   "license": "MIT",
   "homepage": "https://help.aliyun.com/document_detail/2400305.html",
@@ -11,7 +11,10 @@
     "bailian",
     "dashscope"
   ],
-  "author": { "name": "guchengod", "email": "guchengod@gmail.com" },
+  "author": {
+    "name": "guchengod",
+    "email": "guchengod@gmail.com"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/guchengod/n8n-nodes-bailian.git"
@@ -25,22 +28,32 @@
     "release": "n8n-node release",
     "prepublishOnly": "n8n-node prerelease"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "n8n": {
     "n8nNodesApiVersion": 1,
-    "strict": true,
-    "credentials": ["dist/credentials/DashScopeApi.credentials.js"],
-    "nodes": ["dist/nodes/DashScope/DashScope.node.js"]
+    "strict": false,
+    "credentials": [
+      "dist/credentials/DashScopeApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/DashScope/DashScope.node.js"
+    ]
   },
   "devDependencies": {
     "@n8n/node-cli": "*",
     "@types/node": "^25.3.3",
-    "eslint": "9.21.0",
+    "eslint": "^9.39.3",
     "n8n-workflow": "^1.120.9",
     "prettier": "3.5.3",
     "release-it": "^18.1.2",
     "typescript": "5.8.2"
   },
-  "peerDependencies": { "n8n-workflow": "*" },
-  "dependencies": { "axios": "^1.13.6" }
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "dependencies": {
+    "axios": "^1.13.6"
+  }
 }

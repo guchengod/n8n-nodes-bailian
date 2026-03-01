@@ -56,7 +56,7 @@ const commonTaskFields: INodeProperties[] = [
 		name: 'waitingForTask',
 		type: 'boolean',
 		default: true,
-		description: '是否等待并轮询直到任务成功或失败',
+		description: 'Whether to wait and poll until the task succeeds or fails (是否等待并轮询直到任务成功或失败)',
 	},
 	{
 		displayName: '轮询间隔 (毫秒)',
@@ -86,7 +86,7 @@ const commonTaskFields: INodeProperties[] = [
 		name: 'continueOnFail',
 		type: 'boolean',
 		default: true,
-		description: '即使任务失败也继续工作流执行',
+		description: 'Whether to continue workflow execution even if the task fails (即使任务失败也继续工作流执行)',
 	},
 ];
 

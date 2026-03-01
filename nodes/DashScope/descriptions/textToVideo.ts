@@ -69,11 +69,11 @@ export const TextToVideoFields: INodeProperties[] = [
 			},
 		},
 		options: [
-			{ name: '万相-图生视频-基于首帧', value: 'wanx-v2-i2v' },
-			{ name: '万相-图生视频-基于首尾帧', value: 'wanx-v2-i2v-dual' },
+			{ name: '图生表情包视频-Emoji', value: 'wanx-emoji-v1' },
 			{ name: '万相-参考生视频', value: 'wanx-v2-reference' },
 			{ name: '万相-图生动作', value: 'wanx-image-to-action-v1' },
-			{ name: '图生表情包视频-Emoji', value: 'wanx-emoji-v1' },
+			{ name: '万相-图生视频-基于首尾帧', value: 'wanx-v2-i2v-dual' },
+			{ name: '万相-图生视频-基于首帧', value: 'wanx-v2-i2v' },
 		],
 		default: 'wanx-v2-i2v',
 	},
@@ -252,8 +252,8 @@ export const TextToVideoFields: INodeProperties[] = [
 				name: 'size',
 				type: 'options',
 				options: [
-					{ name: '1280*720', value: '1280*720' },
-					{ name: '720*1280', value: '720*1280' },
+					{ name: '[All]', value: '1280*720' },
+
 				],
 				default: '1280*720',
 			},

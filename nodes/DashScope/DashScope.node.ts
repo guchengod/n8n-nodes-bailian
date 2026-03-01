@@ -55,12 +55,24 @@ export class DashScope implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: '图像生成',
-						value: 'textToImage',
+						name: '任务结果',
+						value: 'taskResult',
 					},
 					{
 						name: '视频生成',
 						value: 'textToVideo',
+					},
+					{
+						name: '图像生成',
+						value: 'textToImage',
+					},
+					{
+						name: '向量服务',
+						value: 'vectors',
+					},
+					{
+						name: '语音翻译',
+						value: 'speechTranslation',
 					},
 					{
 						name: '语音合成',
@@ -69,18 +81,6 @@ export class DashScope implements INodeType {
 					{
 						name: '语音识别',
 						value: 'speechRecognition',
-					},
-					{
-						name: '语音翻译',
-						value: 'speechTranslation',
-					},
-					{
-						name: '向量服务',
-						value: 'vectors',
-					},
-					{
-						name: '任务结果',
-						value: 'taskResult',
 					},
 				],
 				default: 'textToImage',
@@ -100,7 +100,8 @@ export class DashScope implements INodeType {
 			...VectorFields,
 			...TaskResultOperations,
 			...TaskResultFields,
-		]
+		],
+		usableAsTool: true
 	};
 
 	methods = {
@@ -133,7 +134,7 @@ export class DashScope implements INodeType {
 					const waitingForTask = this.getNodeParameter('waitingForTask', i, true) as boolean;
 					
 					let submitUrl = '';
-					let requestBody: IDataObject = {
+					const requestBody: IDataObject = {
 						model,
 						input: {},
 						parameters: {}
@@ -248,7 +249,7 @@ export class DashScope implements INodeType {
 					const waitingForTask = this.getNodeParameter('waitingForTask', i, true) as boolean;
 					
 					let submitUrl = '';
-					let requestBody: IDataObject = {
+					const requestBody: IDataObject = {
 						model,
 						input: {},
 						parameters: {}
@@ -397,11 +398,11 @@ export class DashScope implements INodeType {
 
 					const contentType = response.headers['content-type'];
 					if (contentType && contentType.includes('application/json')) {
-						const result = JSON.parse(Buffer.from(response.data as any).toString());
+						const result = JSON.parse(Buffer.from(response.data as Buffer).toString());
 						returnData.push({ json: result });
 					} else {
 						const binaryData = await this.helpers.prepareBinaryData(
-							Buffer.from(response.data as any),
+							Buffer.from(response.data as Buffer),
 							`tts-${Date.now()}.${(requestBody.parameters as IDataObject).format || 'mp3'}`,
 							contentType
 						);
@@ -420,14 +421,14 @@ export class DashScope implements INodeType {
 					const waitingForTask = this.getNodeParameter('waitingForTask', i, true) as boolean;
 					
 					let submitUrl = '';
-					let requestBody: IDataObject = { model, input: {}, parameters: {} };
+					const requestBody: IDataObject = { model, input: {}, parameters: {} };
 
 					if (operation === 'transcription') {
 						submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/audio/asr/transcription';
 						requestBody.input = { file_urls: [fileUrl] };
 						const hotwords = this.getNodeParameter('hotwords', i, '') as string;
 						if (hotwords) {
-							try { (requestBody.parameters as IDataObject).hotwords = JSON.parse(hotwords); } catch (e) { (requestBody.parameters as IDataObject).hotwords = hotwords; }
+							try { (requestBody.parameters as IDataObject).hotwords = JSON.parse(hotwords); } catch { (requestBody.parameters as IDataObject).hotwords = hotwords; }
 						}
 					} else {
 						submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/audio/asr/recognizer';
@@ -466,7 +467,7 @@ export class DashScope implements INodeType {
 					const waitingForTask = this.getNodeParameter('waitingForTask', i, true) as boolean;
 					
 					let submitUrl = '';
-					let requestBody: IDataObject = { model, input: {}, parameters: {} };
+					const requestBody: IDataObject = { model, input: {}, parameters: {} };
 
 					if (operation === 'livetranslate_async') {
 						submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/audio/video-translation/translation';
@@ -510,7 +511,7 @@ export class DashScope implements INodeType {
 					const operation = this.getNodeParameter('operation', i) as string;
 					
 					let submitUrl = '';
-					let requestBody: IDataObject = { model, input: {}, parameters: {} };
+					const requestBody: IDataObject = { model, input: {}, parameters: {} };
 
 					if (operation === 'text_embedding') {
 						// 使用 OpenAI 兼容模式地址

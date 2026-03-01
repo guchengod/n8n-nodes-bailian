@@ -53,11 +53,11 @@ export const SpeechSynthesisFields: INodeProperties[] = [
 		default: {},
 		displayOptions: { show: { resource: ['speechSynthesis'] } },
 		options: [
-			{ displayName: '音频格式', name: 'format', type: 'options', options: [{name:'MP3',value:'mp3'},{name:'WAV',value:'wav'},{name:'PCM',value:'pcm'}], default: 'mp3' },
 			{ displayName: '采样率', name: 'sample_rate', type: 'number', default: 16000 },
-			{ displayName: '语速', name: 'rate', type: 'number', default: 1.0, description: '范围 0.5 到 2.0' },
 			{ displayName: '音调', name: 'pitch', type: 'number', default: 1.0, description: '范围 0.5 到 2.0' },
 			{ displayName: '音量', name: 'volume', type: 'number', default: 50, description: '范围 0 到 100' },
+			{ displayName: '音频格式', name: 'format', type: 'options', options: [{name:'MP3',value:'mp3'},{name:'WAV',value:'wav'},{name:'PCM',value:'pcm'}], default: 'mp3' },
+			{ displayName: '语速', name: 'rate', type: 'number', default: 1.0, description: '范围 0.5 到 2.0' },
 		],
 	},
 ];
