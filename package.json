@@ -3,7 +3,12 @@
   "version": "0.14.0",
   "description": "阿里云DashScope API集成的n8n节点",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "n8n-community",
+    "n8n",
+    "bailian",
+    "dashscope",
+    "aliyun"
   ],
   "license": "MIT",
   "homepage": "https://help.aliyun.com/document_detail/2400305.html",
@@ -40,12 +45,15 @@
     ]
   },
   "devDependencies": {
+    "@n8n/node-cli": "^0.21.0",
     "@types/axios": "^0.9.36",
     "@types/node": "^22.15.29",
     "@typescript-eslint/parser": "~8.32.0",
     "eslint": "^8.57.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "gulp": "^5.0.0",
+    "n8n-core": "^1.122.16",
+    "n8n-workflow": "^1.120.9",
     "prettier": "^3.5.3",
     "typescript": "^5.8.2"
   },
