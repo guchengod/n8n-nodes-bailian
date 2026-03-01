@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-bailian",
-	"version": "0.17.0",
+	"version": "0.18.0",
 	"description": "阿里云DashScope API集成的n8n节点",
 	"license": "MIT",
 	"homepage": "https://help.aliyun.com/document_detail/2400305.html",
