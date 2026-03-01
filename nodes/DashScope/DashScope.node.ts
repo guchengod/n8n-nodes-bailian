@@ -2,7 +2,6 @@
 import { 
 	INodeType, 
 	INodeTypeDescription, 
-	NodeConnectionType,
 	IExecuteFunctions,
 	INodeExecutionData,
 	NodeOperationError,
@@ -31,15 +30,15 @@ export class DashScope implements INodeType {
 		displayName: '阿里云百炼',
 		name: 'dashScope',
 		icon: 'file:dashscope.svg',
-		group: ['ai'],
+		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
 		description: '使用阿里云百炼API',
 		defaults: {
 			name: '阿里云百炼',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'dashScopeApi',
@@ -120,80 +119,120 @@ export class DashScope implements INodeType {
 		try {
 			// 处理不同的资源和操作
 			if (resource === 'textToImage') {
-				// 文本生成图像
-				if (operation === 'create') {
-					for (let i = 0; i < items.length; i++) {
-						// 获取参数
-						const model = this.getNodeParameter('model', i) as string;
+				// 图像相关功能
+				for (let i = 0; i < items.length; i++) {
+					const model = this.getNodeParameter('model', i) as string;
+					const waitingForTask = this.getNodeParameter('waitingForTask', i, true) as boolean;
+					
+					let submitUrl = '';
+					let requestBody: IDataObject = {
+						model,
+						input: {},
+						parameters: {}
+					};
+
+					// --- 接口路径映射 ---
+					if (operation === 'create') {
+						submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis';
 						const prompt = this.getNodeParameter('prompt', i) as string;
-						const negativePrompt = this.getNodeParameter('negativePrompt', i, '') as string;
 						const n = this.getNodeParameter('n', i, 1) as number;
 						const size = this.getNodeParameter('size', i, '1024*1024') as string;
-						const waitingForTask = this.getNodeParameter('waitingForTask', i, true) as boolean;
+						requestBody.input = { prompt };
+						requestBody.parameters = { n, size };
+					} else if (operation === 'edit') {
+						const prompt = this.getNodeParameter('prompt', i, '') as string;
+						const baseImageUrl = this.getNodeParameter('baseImageUrl', i, '') as string;
 						
-						// 构造请求体
-						const requestBody: IDataObject = {
-							model,
-							input: {
-								prompt,
-							},
-							parameters: {
-								n,
-								size,
-							}
-						};
-
-						// 添加负面提示词
-						if (negativePrompt) {
-							(requestBody.input as IDataObject).negative_prompt = negativePrompt;
+						// 根据模型选择不同的端点
+						if (model.includes('wanx2.1-t2i-edit')) {
+							submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/image2image/image-synthesis';
+							requestBody.input = { prompt, base_image_url: baseImageUrl };
+						} else if (model === 'wanx-image-outpainting-v1') {
+							submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/image-outpainting/generation';
+							requestBody.input = { image_url: baseImageUrl };
+						} else if (model === 'wanx-background-generation-v2') {
+							submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/background-generation/generation';
+							requestBody.input = { base_image_url: baseImageUrl, prompt };
+						} else if (model === 'wanx-image-erasure-completion-v1') {
+							submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/image-erasure-completion/generation';
+							const maskImageUrl = this.getNodeParameter('maskImageUrl', i, '') as string;
+							requestBody.input = { image_url: baseImageUrl, mask_url: maskImageUrl };
+						} else if (model === 'wanx-image-local-repaint-v1') {
+							submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/image-local-repaint/generation';
+							const maskImageUrl = this.getNodeParameter('maskImageUrl', i, '') as string;
+							requestBody.input = { image_url: baseImageUrl, mask_url: maskImageUrl, prompt };
+						} else {
+							// 默认通用编辑端点
+							submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/image2image/image-synthesis';
+							requestBody.input = { prompt, base_image_url: baseImageUrl };
 						}
-
-						// 添加高级选项
-						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
-						if (Object.keys(additionalOptions).length > 0 && requestBody.parameters) {
-							Object.assign(requestBody.parameters as IDataObject, additionalOptions);
+					} else if (operation === 'special') {
+						if (model === 'wordart-texture') {
+							submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/wordart/texture';
+							const textContent = this.getNodeParameter('text_content', i, '') as string;
+							const prompt = this.getNodeParameter('prompt', i, '') as string;
+							requestBody.input = { 
+								text: { text_content: textContent },
+								prompt: prompt
+							};
+						} else if (model === 'outfit-anyone-v1') {
+							submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/outfit-anyone/generation';
+							const baseImageUrl = this.getNodeParameter('baseImageUrl', i, '') as string;
+							requestBody.input = { top_garment_url: baseImageUrl }; // 示例：以上衣为原图
+						} else {
+							submitUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/image2image/image-synthesis';
+							const baseImageUrl = this.getNodeParameter('baseImageUrl', i, '') as string;
+							const prompt = this.getNodeParameter('prompt', i, '') as string;
+							requestBody.input = { base_image_url: baseImageUrl, prompt };
 						}
-
-						// 发送请求
-						const response = await axios({
-							method: 'POST',
-							url: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis',
-							headers: {
-								'Content-Type': 'application/json',
-								'Authorization': `Bearer ${apiKey}`
-							},
-							data: requestBody,
-						});
-
-						// 处理响应
-						let result = response.data as IDataObject;
-						
-						// 如果需要轮询任务结果
-						if (waitingForTask && result.output) {
-							const outputData = result.output as IDataObject;
-							if (outputData && typeof outputData.task_id === 'string') {
-								const interval = this.getNodeParameter('interval', i, 2000) as number;
-								const maxWaitTime = this.getNodeParameter('maxWaitTime', i, 300) as number;
-								const taskId = outputData.task_id;
-								
-								try {
-									result = await pollTaskStatus(
-										taskId,
-										'https://dashscope.aliyuncs.com/api/v1/tasks',
-										apiKey,
-										interval,
-										maxWaitTime
-									) as IDataObject;
-								} catch (error) {
-									throw new NodeOperationError(this.getNode(), `轮询任务结果失败: ${error.message}`);
-								}
-							}
-						}
-
-						returnData.push({
-							json: result,
-						});
 					}
+
+					// 添加高级选项
+					const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
+					if (Object.keys(additionalOptions).length > 0 && requestBody.parameters) {
+						Object.assign(requestBody.parameters as IDataObject, additionalOptions);
+					}
+
+					// 发送请求
+					const response = await axios({
+						method: 'POST',
+						url: submitUrl,
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': `Bearer ${apiKey}`,
+							'X-DashScope-Async': 'enable'
+						},
+						data: requestBody,
+					});
+
+					// 处理响应
+					let result = response.data as IDataObject;
+					
+					// 如果需要轮询任务结果
+					if (waitingForTask && result.output) {
+						const outputData = result.output as IDataObject;
+						if (outputData && typeof outputData.task_id === 'string') {
+							const interval = this.getNodeParameter('interval', i, 2000) as number;
+							const maxWaitTime = this.getNodeParameter('maxWaitTime', i, 300) as number;
+							const taskId = outputData.task_id;
+							
+							try {
+								result = await pollTaskStatus(
+									taskId,
+									'https://dashscope.aliyuncs.com/api/v1/tasks',
+									apiKey,
+									interval,
+									maxWaitTime
+								) as IDataObject;
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), `轮询任务结果失败: ${error.message}`);
+							}
+						}
+					}
+
+					returnData.push({
+						json: result,
+					});
 				}
 			} else if (resource === 'textToVideo') {
 				// 文本生成视频

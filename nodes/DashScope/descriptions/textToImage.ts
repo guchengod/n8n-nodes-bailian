@@ -13,10 +13,22 @@ export const TextToImageOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: '创建图像',
+				name: '文生图',
 				value: 'create',
 				description: '使用文本描述生成图像',
-				action: '创建图像',
+				action: '文生图',
+			},
+			{
+				name: '图像编辑/处理',
+				value: 'edit',
+				description: '对现有图像进行编辑、重绘、扩展或补全',
+				action: '图像编辑',
+			},
+			{
+				name: '行业专用生成',
+				value: 'special',
+				description: '虚拟模特、试衣、写真、海报、WordArt等',
+				action: '行业专用生成',
 			},
 		],
 		default: 'create',
@@ -24,70 +36,147 @@ export const TextToImageOperations: INodeProperties[] = [
 ];
 
 export const TextToImageFields: INodeProperties[] = [
-	// 创建图像操作的参数
+	// --- 模型选择 ---
 	{
 		displayName: '模型',
 		name: 'model',
 		type: 'options',
-		options: [
-			{
-				name: 'Wanx Image V1',
-				value: 'wanx-v1',
-			},
-			{
-				name: 'Wanx Image V2',
-				value: 'wanx-v2',
-			},
-			{
-				name: 'Stable Diffusion XL',
-				value: 'stable-diffusion-xl',
-			},
-		],
-		default: 'wanx-v1',
-		description: '要使用的模型',
 		displayOptions: {
 			show: {
 				resource: ['textToImage'],
 				operation: ['create'],
 			},
 		},
+		options: [
+			{ name: '万相-文生图V2', value: 'wanx-v2' },
+			{ name: '万相-文生图V1', value: 'wanx-v1' },
+			{ name: '文生图FLUX', value: 'flux-schnell' },
+			{ name: '文生图StableDiffusion', value: 'stable-diffusion-xl' },
+			{ name: '文生图Z-Image', value: 'z-image-v1' },
+			{ name: '千问-文生图', value: 'qwen-vl-max' },
+		],
+		default: 'wanx-v2',
 		required: true,
 	},
 	{
-		displayName: '提示词',
+		displayName: '模型',
+		name: 'model',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['textToImage'],
+				operation: ['edit'],
+			},
+		},
+		options: [
+			{ name: '万相-图像生成与编辑2.6', value: 'wanx2.1-t2i-edit' },
+			{ name: '万相-通用图像编辑2.5', value: 'wanx-edit-v25' },
+			{ name: '万相-通用图像编辑2.1', value: 'wanx-edit-v21' },
+			{ name: '万相-涂鸦作画', value: 'wanx-sketch-to-image-v1' },
+			{ name: '万相-图像局部重绘', value: 'wanx-image-local-repaint-v1' },
+			{ name: '人像风格重绘', value: 'wanx-style-repaint-v1' },
+			{ name: '图像画面扩展', value: 'wanx-image-outpainting-v1' },
+			{ name: '图像背景生成', value: 'wanx-background-generation-v2' },
+			{ name: '图像擦除补全', value: 'wanx-image-erasure-completion-v1' },
+			{ name: '人物实例分割', value: 'wanx-person-instance-segmentation-v1' },
+			{ name: '千问-图像编辑', value: 'qwen-vl-edit' },
+			{ name: '千问-图像翻译', value: 'qwen-vl-translation' },
+		],
+		default: 'wanx2.1-t2i-edit',
+		required: true,
+	},
+	{
+		displayName: '模型',
+		name: 'model',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['textToImage'],
+				operation: ['special'],
+			},
+		},
+		options: [
+			{ name: 'AI试衣OutfitAnyone', value: 'outfit-anyone-v1' },
+			{ name: '人物写真FaceChain', value: 'facechain-generation-v1' },
+			{ name: '创意文字WordArt锦书', value: 'wordart-texture' },
+			{ name: '虚拟模特', value: 'wanx-virtual-model-v1' },
+			{ name: '鞋靴模特', value: 'wanx-shoe-model-v1' },
+			{ name: '创意海报生成', value: 'wanx-creative-poster-v1' },
+		],
+		default: 'outfit-anyone-v1',
+		required: true,
+	},
+
+	// --- 基础参数 ---
+	{
+		displayName: '提示词 (Prompt)',
 		name: 'prompt',
 		type: 'string',
 		default: '',
 		placeholder: '例如：一只可爱的小猫',
-		description: '用于生成图像的文本描述',
+		description: '用于生成或编辑图像的文本描述',
 		displayOptions: {
 			show: {
 				resource: ['textToImage'],
-				operation: ['create'],
+			},
+			hide: {
+				model: ['wanx-person-instance-segmentation-v1'],
 			},
 		},
 		required: true,
 	},
 	{
-		displayName: '负面提示词',
-		name: 'negativePrompt',
+		displayName: '原图 URL (Base Image URL)',
+		name: 'baseImageUrl',
 		type: 'string',
 		default: '',
-		placeholder: '例如：模糊、低质量',
-		description: '指定不希望在图像中出现的内容',
+		placeholder: 'https://example.com/image.jpg',
+		description: '需要编辑或处理的原图地址',
 		displayOptions: {
 			show: {
 				resource: ['textToImage'],
-				operation: ['create'],
+				operation: ['edit', 'special'],
+			},
+			hide: {
+				model: ['wordart-texture'],
+			},
+		},
+		required: true,
+	},
+	{
+		displayName: '蒙版图片 URL (Mask Image URL)',
+		name: 'maskImageUrl',
+		type: 'string',
+		default: '',
+		description: '用于局部重绘或擦除的蒙版图片',
+		displayOptions: {
+			show: {
+				resource: ['textToImage'],
+				model: ['wanx-image-local-repaint-v1', 'wanx-image-erasure-completion-v1'],
 			},
 		},
 	},
+
+	// --- WordArt 特有参数 ---
+	{
+		displayName: '生成文字',
+		name: 'text_content',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['textToImage'],
+				model: ['wordart-texture'],
+			},
+		},
+	},
+
+	// --- 基础设置 ---
 	{
 		displayName: '输出图片数量',
 		name: 'n',
 		type: 'number',
 		default: 1,
-		description: '要生成的图像数量',
 		displayOptions: {
 			show: {
 				resource: ['textToImage'],
@@ -100,21 +189,11 @@ export const TextToImageFields: INodeProperties[] = [
 		name: 'size',
 		type: 'options',
 		options: [
-			{
-				name: '1024 x 1024',
-				value: '1024*1024',
-			},
-			{
-				name: '720 x 1280',
-				value: '720*1280',
-			},
-			{
-				name: '1280 x 720',
-				value: '1280*720',
-			},
+			{ name: '1024 x 1024', value: '1024*1024' },
+			{ name: '720 x 1280', value: '720*1280' },
+			{ name: '1280 x 720', value: '1280*720' },
 		],
 		default: '1024*1024',
-		description: '输出图片的尺寸',
 		displayOptions: {
 			show: {
 				resource: ['textToImage'],
@@ -122,6 +201,8 @@ export const TextToImageFields: INodeProperties[] = [
 			},
 		},
 	},
+
+	// --- 轮询设置 ---
 	{
 		displayName: '是否持续轮询任务结果',
 		name: 'waitingForTask',
@@ -131,7 +212,6 @@ export const TextToImageFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['textToImage'],
-				operation: ['create'],
 			},
 		},
 	},
@@ -142,12 +222,10 @@ export const TextToImageFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['textToImage'],
-				operation: ['create'],
 				waitingForTask: [true],
 			},
 		},
 		default: 2000,
-		description: '检查任务状态的时间间隔',
 	},
 	{
 		displayName: '最长等待时间 (秒)',
@@ -156,12 +234,10 @@ export const TextToImageFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['textToImage'],
-				operation: ['create'],
 				waitingForTask: [true],
 			},
 		},
 		default: 300,
-		description: '等待任务完成的最长时间',
 	},
 	{
 		displayName: '高级选项',
@@ -172,10 +248,16 @@ export const TextToImageFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['textToImage'],
-				operation: ['create'],
 			},
 		},
 		options: [
+			{
+				displayName: '负面提示词',
+				name: 'negative_prompt',
+				type: 'string',
+				default: '',
+				description: '指定不希望在图像中出现的内容',
+			},
 			{
 				displayName: '种子值',
 				name: 'seed',
